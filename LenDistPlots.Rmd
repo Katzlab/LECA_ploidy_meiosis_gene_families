@@ -1,0 +1,57 @@
+---
+title: "My My - Length Distribution"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+
+```
+
+## Including Plots
+
+Plot both euk and bact on the same plot
+
+```{r pressure, echo=TRUE}
+#plot_data <- read.delim("data/combined.tsv", header=TRUE, sep=",", quote="", na.strings="", #comment.char="")
+
+plot_data <- read_tsv("data/combined.tsv")
+#plot_data <- subset(plot_data, select = -c("-X"))
+#plot_data[, !colnames(plot_data) %in% c("X1)")]
+#plot_data <- subset(plot_data, select = -c(X1))
+plot_data$X1 <- NULL
+plot_data
+
+ggplot(plot_data, aes(x=OG, y=Length,fill=Domain)) + 
+  geom_violin() +
+  #geom_jitter(shape=16, position=position_jitter(0.1)) +
+  geom_boxplot(width=-0.1) +
+  geom_jitter(shape=16, position=position_jitter(0.1)) +
+  scale_fill_brewer(palette="PuOr") + theme_minimal() +
+  labs(title = "GEX1 Length Distribution")
+ggsave("GEX1 Length Distribution.jpg")
+
+
+```
+Separate euk and bact of the same gene
+```{r}
+#separate_plots <- plot_data %>%
+  #mutate(Eukaryotes = ifelse(Domain == "Eukaryota", Eukaryotes))
+
+ggplot(plot_data, aes(x=OG, y=Length,fill =Domain)) + 
+  geom_violin() +
+  facet_wrap(~Domain) +
+  #stat_ydensity(aes(group = OG, size = stat(violinwidth)), data = plot_data, 
+                #geom = "point", color = "red")
+  geom_boxplot(width=-0.1) +
+  geom_jitter(shape=16, position=position_jitter(0.1)) +
+  scale_fill_brewer(palette="PuOr") + theme_minimal() +
+  labs(title = "GEX1 Eukaryote and Bacteria Length Distribution") +
+  ggsave("GEX1 Eukaryote and Bacteria Length Distribution.jpg") 
+
+
+```
+Challenge:
+
+Plot multiple sequences 
