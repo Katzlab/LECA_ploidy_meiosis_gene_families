@@ -1,6 +1,6 @@
 # Phylogenomic analysis of genes associated with meiosis and ploidy
 
-## Workflow (in progress)
+## Data curation workflow (in progress)
 
 1. Collect protein sequences (FASTA) from the EggNog database
 
