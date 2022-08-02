@@ -19,7 +19,7 @@ def main(wd, folder, fasta):
 	
 	os.system('python diamond_meiosis.py ' + folder+"/"+fasta + " " + fasta.split(".")[0]) 
 	# deletes cluster file (we don't use)
-	os.system('rm -r *Meiosis_OGs.tsv')
+	os.system('mv *Meiosis_OGs.tsv full_hits')
 	
 	os.system('mv *Meiotic_Genes_to_OGs.tsv diamond_output')
 
@@ -40,4 +40,4 @@ def automate(wd, folder):
 if __name__ == '__main__':
 	wd = sys.argv[1]
 	input_folder = sys.argv[2]
-	automate(input_folder)
+	automate(wd, input_folder)

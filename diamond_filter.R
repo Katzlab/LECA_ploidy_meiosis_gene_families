@@ -29,7 +29,7 @@ collapse_fx <- function(fx_list) {
   }
 }
 
-filter_ogs <- function(cutoff) {
+process_ogs <- function(cutoff) {
   args <- commandArgs(trailingOnly = TRUE)
   ogs = read.delim(args[1]) %>%
     filter(Gene.Name != "Gene Name") %>%
@@ -44,46 +44,57 @@ filter_ogs <- function(cutoff) {
   return (ogs)
 }
 
+read_fx <- function() {
+  og_fx <- read.delim("/Users/katzlab_admin/Desktop/Caitlin/aa_deflines_OrthoMCL-5.txt", sep = "|", header=FALSE,
+                      col.names = c("x1", "NP_id", "OG5", "fx")) %>%
+    separate(col="OG5", into=c("prefix", "OG5"), sep="_", remove=TRUE) %>%
+    dplyr::select(c("OG5", "fx")) 
+  og_fx$OG5 <- trimws(og_fx$OG5, which = "both")
+  
+  return (og_fx)
+}
+
+filter_ogs <- function(ogs) {
+  og_fx <- read_fx()
+  og_fx_fil <- og_fx %>%
+    inner_join(ogs, by="OG5") %>%
+    mutate(fx = trimws(as.character(fx)), which="both") %>%
+    group_by(OG5) %>%
+    summarize(n_species = mean(n_species),
+              total_species = mean(total_species),
+              perc_species = mean(perc_species),
+              fx = collapse_fx(fx)) %>%
+    arrange(desc(perc_species)) %>%
+    mutate(OG5 = paste0("OG5_", OG5))
+  
+  return (og_fx_fil)
+}
+
 main <- function(cutoff) {
   args <- commandArgs(trailingOnly = TRUE)
   
-  ogs <- filter_ogs(cutoff)
+  ogs <- process_ogs(cutoff)
   
   if (nrow(ogs) > 0) {
-    og_fx <- read.delim("/Users/katzlab_admin/Desktop/Caitlin/aa_deflines_OrthoMCL-5.txt", sep = "|", header=FALSE,
-                        col.names = c("x1", "NP_id", "OG5", "fx")) %>%
-      separate(col="OG5", into=c("prefix", "OG5"), sep="_", remove=TRUE) %>%
-      dplyr::select(c("OG5", "fx")) 
-    og_fx$OG5 <- trimws(og_fx$OG5, which = "both")
+    og_fx_fil <- filter_ogs(ogs)
     
-    og_fx_fil <- og_fx %>%
-      inner_join(ogs, by="OG5") %>%
-      mutate(fx = trimws(as.character(fx)), which="both") %>%
-      group_by(OG5) %>%
-      summarize(n_species = mean(n_species),
-                total_species = mean(total_species),
-                perc_species = mean(perc_species),
-                fx = collapse_fx(fx)) %>%
-      arrange(desc(perc_species)) %>%
-      mutate(OG5 = paste0("OG5_", OG5))
-      
-
     for (i in 1:nrow(og_fx_fil)) {
       print(paste0(as.character(og_fx_fil$OG5[i]), " hit by ", as.character(og_fx_fil$perc_species[i]), "% of taxa"))
     }
     write.csv(og_fx_fil, file=paste0(unlist(str_split(args[1], pattern=".tsv"))[1], "_filtered.tsv"), row.names=FALSE)
+    written = TRUE
+    return()
   }
   else {
     while (cutoff > 0) {
+      print(cutoff)
       cutoff = cutoff - 5
-      filter_ogs(cutoff)
+      main(cutoff)
     }
     return("No qualifying OGs.")
   }
 }
 
 main(cutoff=75)
-
-
 
 

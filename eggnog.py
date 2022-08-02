@@ -1,4 +1,12 @@
-# Usage: bash eggnog.sh <gene family name> <kog/cog number>
+# Usage: python eggnog.py <ids.csv>
+
+'''
+AUTHOR: Caitlin Timmons
+6/16/2022
+Given a .csv with the columns 'gene', 'cog', 'arcog', 'enog', 
+this script will access the EggNOG API and pull the protein sequences in FASTA
+format for all of the gene families listed in the .csv.
+'''
 
 import pandas as pd
 import os
